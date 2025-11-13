@@ -4,9 +4,18 @@ import InputError from '@/Components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Eye, EyeOff } from "lucide-vue-next"
 
 
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
+
+//handle show hide password
+const showPassword = ref(true);
+
+const togglePassword = () => {
+    showPassword.value = !showPassword.value
+}
 
 defineProps({
     canResetPassword: {
@@ -68,15 +77,22 @@ const submit = () => {
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" v-model="form.password" required />
+                <div class="relative w-full max-w-sm items-center">
+                    <Input v-if="showPassword" id="password" type="password" v-model="form.password" required class="pr-10" />
+                    <Input v-else id="password" type="text" v-model="form.password" required class="pr-10" />
+                    <span @click="togglePassword" class="absolute end-0 inset-y-0 flex items-center justify-center px-2 cursor-pointer">
+                      <Eye v-if="showPassword" class="size-6 text-muted-foreground" />
+                      <EyeOff v-else class="size-6 text-muted-foreground" />
+                    </span>
+                </div>
                 <InputError class="mt-2" :message="form.errors.password" />
               </div>
-              <Button type="submit" class="w-full"> Login </Button>
+              <Button :disabled="form.processing" type="submit" class="w-full"> Login </Button>
             </div>
         </form>
         <div class="mt-4 text-center text-sm">
           Don't have an account?
-          <a href="#" class="underline"> Sign up </a>
+          <Link :href="route('register')" class="underline"> Sign up </Link>
         </div>
       </div>
     </div>

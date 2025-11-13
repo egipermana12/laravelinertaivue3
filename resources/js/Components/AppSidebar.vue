@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SidebarProps } from '@/components/ui/sidebar'
 
+
 import {
   AudioWaveform,
   BookOpen,
@@ -16,6 +17,7 @@ import {
 
 import NavUser from '@/components/NavUser.vue'
 import TeamSwitcher from '@/components/TeamSwitcher.vue'
+import NavMainCustom from '@/components/NavMainCustom.vue'
 
 import {
   Sidebar,
@@ -25,33 +27,33 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+
 import { ChevronRight } from "lucide-vue-next"
 
-import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem
-} from '@/components/ui/sidebar'
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: "icon",
+  variant: "sidebar"
 })
+
+import { computed,ref } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+
+const user = computed(() => page.props.auth.user)
+
 
 {/*sidebara data*/}
 import {sidebarData} from '@/constans/sidebarData.ts'
 const data = sidebarData;
+
+const useravatar = {...user.value, avatar: "https://www.shadcn-vue.com/avatars/shadcn.jpg",}
+
+const mergedData = computed(() => ({
+  ...data,
+  user2: useravatar, // menambahkan user dari inertia sebagai user2
+}))
 
 
 </script>
@@ -59,51 +61,13 @@ const data = sidebarData;
 <template>
   <Sidebar v-bind="props">
     <SidebarHeader>
-      <TeamSwitcher :teams="data.teams" />
+      <TeamSwitcher :teams="mergedData.teams" />
     </SidebarHeader>
     <SidebarContent>
-      <SidebarGroup>
-      <SidebarMenu>
-        <SidebarMenuItem v-for="item in data.navMain":key="item.title">
-        <div v-if="item.items && item.items.length">
-          <Collapsible>
-          <SidebarMenuItem>
-            <CollapsibleTrigger as-child>
-            <SidebarMenuButton :tooltip="item.title">
-              <component :is="item.icon" v-if="item.icon" />
-              <span>{{ item.title }}</span>
-              <ChevronRight class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-            </SidebarMenuButton>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <SidebarMenuSub>
-              <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
-                <SidebarMenuSubButton as-child>
-                  <a :href="subItem.url">
-                    <span>{{ subItem.title }}</span>
-                  </a>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-            </SidebarMenuSub>
-          </CollapsibleContent>
-          </SidebarMenuItem>
-          </Collapsible>
-        </div>
-        <div v-else>
-          <SidebarMenuButton as-child>
-            <a :href="item.url">
-              <component :is="item.icon" />
-              <span>{{ item.title }}</span>
-            </a>
-          </SidebarMenuButton>
-        </div>
-      </SidebarMenuItem>
-      </SidebarMenu>
-    </SidebarGroup>
-
+        <NavMainCustom :items="mergedData.navMain"/>
     </SidebarContent>
     <SidebarFooter>
-      <NavUser :user="data.user" />
+      <NavUser :user="mergedData.user2" />
     </SidebarFooter>
     <SidebarRail />
   </Sidebar>

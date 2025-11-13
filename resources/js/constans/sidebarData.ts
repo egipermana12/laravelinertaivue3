@@ -33,7 +33,7 @@ export interface NavMain {
   url: string
   icon: any
   isActive?: boolean
-  items: NavItem[]
+  items?: NavItem[]
 }
 
 export interface Project {

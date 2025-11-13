@@ -21,8 +21,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-
-
 </script>
 <template>
   <SidebarProvider>
