@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -46,5 +48,23 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the user's avatar URL.
+     */
+    protected function avatar(): Attribute
+    {
+        return Attribute::make(
+            get: function (string $value = null) {
+                // Jika tidak ada nilai avatar, kembalikan null atau placeholder
+                if (!$value) {
+                    return null;
+                }
+
+                // Gunakan Storage::url() untuk menghasilkan URL publik yang benar
+                return Storage::disk('public')->url($value);
+            },
+        );
     }
 }

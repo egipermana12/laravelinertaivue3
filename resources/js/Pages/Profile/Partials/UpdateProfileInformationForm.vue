@@ -1,8 +1,11 @@
 <script setup>
 import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
+
+//shcdn vue
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 
 defineProps({
@@ -18,6 +21,7 @@ const user = usePage().props.auth.user;
 
 const form = useForm({
     name: user.name,
+    username: user.username,
     email: user.email,
 });
 </script>
@@ -39,12 +43,11 @@ const form = useForm({
             class="mt-6 space-y-6"
         >
             <div>
-                <InputLabel for="name" value="Name" />
+                <Label for="name">Fullname</Label>
 
-                <TextInput
+                <Input
                     id="name"
                     type="text"
-                    class="mt-1 block w-full"
                     v-model="form.name"
                     required
                     autofocus
@@ -55,12 +58,25 @@ const form = useForm({
             </div>
 
             <div>
-                <InputLabel for="email" value="Email" />
+                <Label for="username">Username</Label>
 
-                <TextInput
+                <Input
+                    id="username"
+                    type="text"
+                    v-model="form.username"
+                    required
+                    autocomplete="username"
+                />
+
+                <InputError class="mt-2" :message="form.errors.username" />
+            </div>
+
+            <div>
+                <Label for="email">Email</Label>
+
+                <Input
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
                     v-model="form.email"
                     required
                     autocomplete="username"
@@ -91,7 +107,7 @@ const form = useForm({
             </div>
 
             <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+                <Button :disabled="form.processing">Save</Button>
 
                 <Transition
                     enter-active-class="transition ease-in-out"

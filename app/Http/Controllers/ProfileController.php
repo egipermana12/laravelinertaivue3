@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -36,6 +37,49 @@ class ProfileController extends Controller
         }
 
         $request->user()->save();
+
+        return Redirect::route('profile.edit');
+    }
+
+    /**
+     * update profile avatar
+     */
+    public function updateAvatar(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        // 1. Validasi File
+        $request->validate([
+            // Aturan validasi: Wajib ada, harus berupa file gambar (jpeg, png, gif, svg, webp),
+            // maksimum 2MB, dan harus rasio 1:1.
+            'avatar' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', 'dimensions:min_width=100,min_height=100,ratio=1/1'],
+        ]);
+
+        // 3. Simpan file baru
+        // store('avatars', 'public') akan menyimpan file di storage/app/public/avatars/
+        // dan mengembalikan path-nya, misal: 'avatars/randomhash.jpg'
+        $path = $request->file('avatar')->store('avatars', 'public');
+
+        // 4. Update database
+        $user->update(['avatar' => $path]);
+
+        return Redirect::route('profile.edit');
+    }
+
+    /**
+     * delete profile user
+     */
+    public function deleteAvatar(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $avatarRaw = $user->getRawOriginal('avatar');
+
+        // Opsional: Hapus file avatar lama dari storage sebelum update
+        if ($avatarRaw) {
+            Storage::disk('public')->delete($avatarRaw);
+        }
+
+        $user->update(['avatar' => null]);
 
         return Redirect::route('profile.edit');
     }

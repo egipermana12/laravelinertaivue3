@@ -4,7 +4,7 @@ import InputError from '@/Components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff } from "lucide-vue-next"
+import { Eye, EyeOff } from "lucide-vue-next";
 
 
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -27,7 +27,7 @@ defineProps({
 });
 
 const form = useForm({
-    email: '',
+    login: '',
     password: '',
     remember: false,
 });
@@ -57,15 +57,15 @@ const submit = () => {
         <form @submit.prevent="submit">
             <div class="grid gap-4">
               <div class="grid gap-2">
-                <Label for="email">Email</Label>
+                <Label for="login">Email or Username</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  v-model="form.email"
-                  placeholder="m@example.com"
+                  id="login"
+                  type="login"
+                  v-model="form.login"
+                  placeholder="username or email"
                   required
                 />
-                <InputError class="mt-2" :message="form.errors.email" />
+                <InputError class="mt-2" :message="form.errors.login" />
               </div>
               <div class="grid gap-2">
                 <div class="flex items-center">
