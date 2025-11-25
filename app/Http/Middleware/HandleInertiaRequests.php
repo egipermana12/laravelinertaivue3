@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Models\SidebarsModel;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -34,6 +35,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user() ? $request->user()->only('id', 'name', 'email', 'avatar', 'username') : null,
             ],
+            'flash' => [
+                'success' => session()->get('success'),
+                'error' => session()->get('error'),
+            ],
+            'sidebars' => fn() => $request->user() ? (new SidebarsModel)->generateSidebar() : [],
         ];
     }
 }

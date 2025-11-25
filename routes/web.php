@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SidebarController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -24,6 +25,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/deleteavatar', [ProfileController::class, 'deleteAvatar'])->name('profile.deleteavatar');
     Route::post('/updateAvatar', [ProfileController::class, 'updateAvatar'])->name('profile.updateavatar');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    //sidebar
+    Route::get('/sidebar', [SidebarController::class, 'index'])->name('sidebar.index');
+    Route::post('/sidebar/reorder', [SidebarController::class, 'reorder'])->name('sidebar.reorder');
 });
 
 require __DIR__.'/auth.php';

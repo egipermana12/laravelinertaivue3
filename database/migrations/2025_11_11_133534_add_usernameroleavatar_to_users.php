@@ -22,8 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Menghapus kolom 'username' dan 'avatar' saat rollback
         Schema::table('users', function (Blueprint $table) {
-
+            $table->dropColumn(['username', 'avatar']);
         });
     }
 };

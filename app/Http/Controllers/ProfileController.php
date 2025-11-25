@@ -51,7 +51,7 @@ class ProfileController extends Controller
         $request->validate([
             // Aturan validasi: Wajib ada, harus berupa file gambar (jpeg, png, gif, svg, webp),
             // maksimum 2MB, dan harus rasio 1:1.
-            'avatar' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', 'dimensions:min_width=100,min_height=100,ratio=1/1'],
+            'avatar' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ]);
 
         // 3. Simpan file baru
