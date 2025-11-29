@@ -12,16 +12,24 @@
     >
         <li v-for="el in list" :key="el.id" class="my-2">
             <div
-                class="p-2 bg-gray-900 text-white flex justify-between rounded"
+                class="p-2 bg-gray-900 text-white flex justify-between rounded cursor-pointer"
             >
                 <div class="flex items-center gap-2">
-                    <Move size="18" />
+                    <component :is="useIcon(el.icon)" class="w-5 h-5" />
                     {{ el.title }}
+                </div>
+                <div class="flex items-center gap-2">
+                    <SquarePen class="w-5 h-5" @click="$emit('edit', el)" />
                 </div>
             </div>
 
             <!-- nested -->
-            <SidebarSortItem v-model="el.items" :isChild="true" @end="onEnd" />
+            <SidebarSortItem
+                v-model="el.items"
+                :isChild="true"
+                @end="onEnd"
+                @edit="$emit('edit', $event)"
+            />
         </li>
     </VueDraggable>
 </template>
@@ -29,18 +37,19 @@
 <script setup>
 import { VueDraggable } from "vue-draggable-plus";
 import SidebarSortItem from "./SidebarSortItem.vue";
-import { Move } from "lucide-vue-next";
+import { useIcon } from "@/lib/useIcon";
+import { SquarePen } from "lucide-vue-next";
 import { computed } from "vue";
 import { useSwal } from "@/lib/useSwal";
 
-const { fire } = useSwal();
+const { error } = useSwal();
 
 const props = defineProps({
     modelValue: Array,
     isChild: Boolean,
 });
 
-const emit = defineEmits(["update:modelValue", "end"]);
+const emit = defineEmits(["update:modelValue", "end", "edit"]);
 
 const list = computed({
     get: () => props.modelValue,
@@ -63,7 +72,7 @@ const onMove = (evt) => {
     // RULE 1: Parent (punya child) tidak boleh masuk child
     // ===============================
     if (dragged.items && dragged.items.length > 0 && toIsChild) {
-        console.warn("Parent tidak boleh menjadi child");
+        error("Parent memiliki child tidak boleh menjadi child.");
         return false;
     }
 
@@ -72,7 +81,7 @@ const onMove = (evt) => {
     // ===============================
     if (fromIsChild && toIsChild) {
         // masih sama-sama child → boleh
-        fire("Item child tidak boleh memiliki child lagi.");
+        error("Item child tidak boleh memiliki child lagi.");
         return false;
     }
 

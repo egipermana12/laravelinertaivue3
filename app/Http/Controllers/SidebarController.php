@@ -27,4 +27,22 @@ class SidebarController extends Controller
         $item = $request->sidebars;
         dd($item);
     }
+
+    /*** 
+     * handling update of sidebar item
+    */
+    public function update(Request $request, $id)
+    {
+        
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'url'   => 'required|string|max:255',
+            'icon'  => 'required|string|max:100',
+        ]);
+
+
+        SidebarsModel::where('id', $id)->update($validated);
+
+        return back()->with('success', 'Sidebar updated!');   
+    }
 }

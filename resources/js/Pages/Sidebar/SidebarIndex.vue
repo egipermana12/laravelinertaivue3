@@ -1,8 +1,13 @@
 <script setup>
 import LayoutDashboard from "@/Layouts/LayoutDashboard.vue";
-import { Head, router } from "@inertiajs/vue3";
+import { Head, router, useForm } from "@inertiajs/vue3";
+import Modal from "@/Components/Modal.vue";
 import { ref, watch } from "vue";
 import SidebarSortItem from "./SidebarSortItem.vue";
+import { Button } from "@/components/ui/button";
+import InputError from "@/Components/InputError.vue";
+import { useIcon } from "@/lib/useIcon";
+import iconPicker from "../Parts/iconPicker.vue";
 
 const props = defineProps({
     sidebars: Array,
@@ -18,6 +23,56 @@ watch(
         localSidebars.value = [...val];
     }
 );
+
+//modal
+const showModal = ref(false);
+const selectedItem = ref(null);
+const modalIcons = ref(false);
+
+const openEditModal = (item) => {
+    selectedItem.value = { ...item }; // clone biar reactive aman
+
+    useFormSidebar.reset();
+    useFormSidebar.title = selectedItem.value.title;
+    useFormSidebar.url = selectedItem.value.url;
+    useFormSidebar.icon = selectedItem.value.icon;
+
+    showModal.value = true;
+};
+
+const closeModal = () => {
+    showModal.value = false;
+};
+
+const openIconPicker = () => {
+    modalIcons.value = true;
+};
+
+const closeIconPicker = () => {
+    modalIcons.value = false;
+};
+
+const updateIcons = (iconName) => {
+    if (selectedItem.value) {
+        selectedItem.value.icon = iconName;
+        useFormSidebar.icon = iconName;
+    }
+    modalIcons.value = false;
+};
+
+// simpan item sidebar
+const useFormSidebar = useForm({
+    title: "",
+    url: "",
+    icon: "",
+});
+
+const saveItemSidebar = () => {
+    useFormSidebar.put(`/sidebar/${selectedItem.value.id}`, {
+        preserveScroll: true,
+        onSuccess: () => closeModal(),
+    });
+};
 
 const onDragEnd = () => {
     // console.log("Reordered Sidebars:", localSidebars.value);
@@ -45,9 +100,84 @@ const onDragEnd = () => {
                     <div class="py-4">Sidebar Page</div>
 
                     <!-- Gunakan state lokal, bukan props.sidebars -->
-                    <SidebarSortItem v-model="localSidebars" @end="onDragEnd" />
+                    <SidebarSortItem
+                        v-model="localSidebars"
+                        @end="onDragEnd"
+                        @edit="openEditModal"
+                    />
                 </div>
             </div>
         </div>
+
+        <!-- modal form -->
+        <Modal :show="showModal" @close="closeModal" maxWidth="lg">
+            <form @submit.prevent="saveItemSidebar">
+                <div class="p-6">
+                    <h2 class="text-lg font-bold mb-4">Edit Sidebar Item</h2>
+
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-600">Nama</label>
+                        <input
+                            v-model="useFormSidebar.title"
+                            type="text"
+                            class="w-full border rounded p-2"
+                        />
+                        <InputError
+                            class="mt-2"
+                            :message="useFormSidebar.errors.title"
+                        />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-600">URL</label>
+                        <input
+                            v-model="useFormSidebar.url"
+                            type="text"
+                            class="w-full border rounded p-2"
+                        />
+                        <InputError
+                            class="mt-2"
+                            :message="useFormSidebar.errors.url"
+                        />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-600">Icon</label>
+                        <div
+                            class="w-full bg-gray-50 border border-gray-400 p-2 rounded flex items-center justify-between"
+                        >
+                            <component
+                                :is="useIcon(selectedItem.icon)"
+                                class="w-6 h-6 mb-2"
+                            />
+                            <input
+                                v-model="useFormSidebar.icon"
+                                type="text"
+                                class="hidden"
+                            />
+                            <Button type="button" @click="openIconPicker"
+                                >Change</Button
+                            >
+                        </div>
+                        <InputError
+                            class="mt-2"
+                            :message="useFormSidebar.errors.icon"
+                        />
+                    </div>
+                </div>
+                <Button
+                    type="submit"
+                    :disabled="useFormSidebar.processing"
+                    class="w-full"
+                >
+                    Save Changes
+                </Button>
+            </form>
+        </Modal>
+
+        <!-- modal icons picker -->
+        <Modal :show="modalIcons" @close="closeIconPicker" maxWidth="xl">
+            <icon-picker @select="updateIcons" />
+        </Modal>
     </LayoutDashboard>
 </template>

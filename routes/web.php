@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     //sidebar
     Route::get('/sidebar', [SidebarController::class, 'index'])->name('sidebar.index');
     Route::post('/sidebar/reorder', [SidebarController::class, 'reorder'])->name('sidebar.reorder');
+    Route::put('/sidebar/{id}', [SidebarController::class, 'update'])->name('sidebar.update');
 });
 
 require __DIR__.'/auth.php';

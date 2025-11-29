@@ -1,14 +1,21 @@
 import { getCurrentInstance } from "vue";
+import type { SweetAlertOptions } from "sweetalert2";
 
 export function useSwal() {
     const { proxy } = getCurrentInstance()!;
     const swal = proxy.$swal;
 
-    const fire = (options: SweetAlertOptions | string) => {
+    const fire = (
+        options: SweetAlertOptions | string,
+        icon?: "success" | "error" | "warning" | "info" | "question"
+    ) => {
         if (typeof options === "string") {
-            return swal(options);
+            return swal({ title: options, icon: icon });
         }
-        return swal(options);
+        return swal({
+            ...options,
+            icon: icon ?? options.icon, // icon bisa override atau pakai bawaan
+        });
     };
 
     const confirm = async (
@@ -43,5 +50,12 @@ export function useSwal() {
             .fire({ title, icon });
     };
 
-    return { fire, confirm, toast };
+    // shortcut helper
+    const success = (msg: string, title = "Berhasil") =>
+        fire({ title, text: msg }, "success");
+
+    const error = (msg: string, title = "Gagal") =>
+        fire({ title, text: msg }, "error");
+
+    return { fire, confirm, toast, error };
 }
