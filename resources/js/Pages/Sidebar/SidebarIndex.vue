@@ -26,16 +26,22 @@ watch(
 
 //modal
 const showModal = ref(false);
-const selectedItem = ref(null);
+const disableUrl = ref(false);
 const modalIcons = ref(false);
 
 const openEditModal = (item) => {
-    selectedItem.value = { ...item }; // clone biar reactive aman
-
+    // Opsi 1: Lebih eksplisit
     useFormSidebar.reset();
-    useFormSidebar.title = selectedItem.value.title;
-    useFormSidebar.url = selectedItem.value.url;
-    useFormSidebar.icon = selectedItem.value.icon;
+
+    // 2. Isi semua properti form, termasuk ID
+    useFormSidebar.id = item.id;
+    useFormSidebar.title = item.title;
+    useFormSidebar.url = item.url;
+    useFormSidebar.icon = item.icon;
+
+    item.items.length > 0
+        ? (disableUrl.value = true)
+        : (disableUrl.value = false);
 
     showModal.value = true;
 };
@@ -53,22 +59,20 @@ const closeIconPicker = () => {
 };
 
 const updateIcons = (iconName) => {
-    if (selectedItem.value) {
-        selectedItem.value.icon = iconName;
-        useFormSidebar.icon = iconName;
-    }
+    useFormSidebar.icon = iconName;
     modalIcons.value = false;
 };
 
 // simpan item sidebar
 const useFormSidebar = useForm({
+    id: null,
     title: "",
     url: "",
     icon: "",
 });
 
 const saveItemSidebar = () => {
-    useFormSidebar.put(`/sidebar/${selectedItem.value.id}`, {
+    useFormSidebar.put(`/sidebar/${useFormSidebar.id}`, {
         preserveScroll: true,
         onSuccess: () => closeModal(),
     });
@@ -76,15 +80,15 @@ const saveItemSidebar = () => {
 
 const onDragEnd = () => {
     // console.log("Reordered Sidebars:", localSidebars.value);
-    // router.post(
-    //     "/sidebar/reorder",
-    //     {
-    //         sidebars: localSidebars.value,
-    //     },
-    //     {
-    //         preserveScroll: true,
-    //     }
-    // );
+    router.post(
+        "/sidebar/reorder",
+        {
+            sidebars: localSidebars.value,
+        },
+        {
+            preserveScroll: true,
+        }
+    );
 };
 </script>
 
@@ -132,8 +136,12 @@ const onDragEnd = () => {
                         <label class="block text-sm text-gray-600">URL</label>
                         <input
                             v-model="useFormSidebar.url"
+                            :disabled="disableUrl"
                             type="text"
                             class="w-full border rounded p-2"
+                            :class="{
+                                'bg-gray-300 cursor-not-allowed': disableUrl,
+                            }"
                         />
                         <InputError
                             class="mt-2"
@@ -147,7 +155,7 @@ const onDragEnd = () => {
                             class="w-full bg-gray-50 border border-gray-400 p-2 rounded flex items-center justify-between"
                         >
                             <component
-                                :is="useIcon(selectedItem.icon)"
+                                :is="useIcon(useFormSidebar.icon)"
                                 class="w-6 h-6 mb-2"
                             />
                             <input
@@ -164,14 +172,16 @@ const onDragEnd = () => {
                             :message="useFormSidebar.errors.icon"
                         />
                     </div>
+                    <div class="pt-4">
+                        <Button
+                            type="submit"
+                            :disabled="useFormSidebar.processing"
+                            class="w-full"
+                        >
+                            Save Changes
+                        </Button>
+                    </div>
                 </div>
-                <Button
-                    type="submit"
-                    :disabled="useFormSidebar.processing"
-                    class="w-full"
-                >
-                    Save Changes
-                </Button>
             </form>
         </Modal>
 

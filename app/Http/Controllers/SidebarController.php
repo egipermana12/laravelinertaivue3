@@ -24,8 +24,32 @@ class SidebarController extends Controller
      */
     public function reorder(Request $request)
     {
-        $item = $request->sidebars;
-        dd($item);
+        $items = $request->sidebars;
+        if (!is_array($items)) {
+            return response()->json(['message' => 'Invalid data format'], 422);
+        }
+
+        // Call the recursive function to update the order
+        $this->updateSidebarOrder($items);
+        return back()->with('success', 'Sidebar berhasil diupdate!');
+    }
+
+    /***
+     * handling recusive function to update sidebar order
+     */
+    private function updateSidebarOrder(array $items, int $parentId = 0)
+    {
+        foreach( $items as $sort => $item)
+        {
+            SidebarsModel::where('id', $item['id'])->update([
+                'parentId' => $parentId,
+                'sortOrder' => $sort,
+            ]);
+
+            if (isset($item['items']) && is_array($item['items'])) {
+                $this->updateSidebarOrder($item['items'], $item['id']);
+            }
+        }
     }
 
     /*** 

@@ -46,7 +46,7 @@ const { error } = useSwal();
 
 const props = defineProps({
     modelValue: Array,
-    isChild: Boolean,
+    isChild: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["update:modelValue", "end", "edit"]);
@@ -80,7 +80,7 @@ const onMove = (evt) => {
     // RULE 2: Child tidak boleh punya child
     // ===============================
     if (fromIsChild && toIsChild) {
-        // masih sama-sama child → boleh
+        // masih sama-sama child → tidak boleh
         error("Item child tidak boleh memiliki child lagi.");
         return false;
     }
