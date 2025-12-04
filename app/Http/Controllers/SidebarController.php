@@ -69,4 +69,20 @@ class SidebarController extends Controller
 
         return back()->with('success', 'Sidebar updated!');   
     }
+
+    /*** 
+     * handling creation of new sidebar item
+    */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'url'   => 'required|string|max:255',
+            'icon'  => 'required|string|max:100',
+        ]);
+
+        SidebarsModel::create($validated);
+
+        return back()->with('success', 'New sidebar item created!');
+    }
 }

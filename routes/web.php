@@ -30,6 +30,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/sidebar', [SidebarController::class, 'index'])->name('sidebar.index');
     Route::post('/sidebar/reorder', [SidebarController::class, 'reorder'])->name('sidebar.reorder');
     Route::put('/sidebar/{id}', [SidebarController::class, 'update'])->name('sidebar.update');
+    Route::post('/sidebar/new', [SidebarController::class, 'store'])->name('sidebar.store');
+
+    //user
+    Route::get('/users', [App\Http\Controllers\UserController::class, 'index'])->name('users.index');
 });
 
 require __DIR__.'/auth.php';

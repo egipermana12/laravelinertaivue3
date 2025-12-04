@@ -101,7 +101,7 @@ const onMove = (evt) => {
 
 <style scoped>
 .drag-area {
-    min-height: 50px;
+    min-height: 25px;
     outline: 1px dashed;
 }
 </style>
