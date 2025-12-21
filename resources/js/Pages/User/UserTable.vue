@@ -1,12 +1,18 @@
 <script setup>
 import Checkbox from "@/Components/Checkbox.vue";
+import { Trash, SquarePen } from "lucide-vue-next";
 const props = defineProps({
     users: Object,
     selected: Array,
     allSelected: Boolean,
 });
 
-const emit = defineEmits(["toggle-select-all", "toggle-select-single"]);
+const emit = defineEmits([
+    "toggle-select-all",
+    "toggle-select-single",
+    "edit-user",
+    "delete-user",
+]);
 </script>
 
 <template>
@@ -56,7 +62,7 @@ const emit = defineEmits(["toggle-select-all", "toggle-select-single"]);
                     class="text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
                     colspan="1"
                 >
-                    Permissions
+                    Actions
                 </th>
             </tr>
         </thead>
@@ -127,15 +133,20 @@ const emit = defineEmits(["toggle-select-all", "toggle-select-single"]);
                         >
                     </span>
                 </td>
-                <td
-                    class="p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]"
-                >
-                    <span
-                        v-for="permission in user.permissions"
-                        :key="permission"
+
+                <td class="text-center">
+                    <button
+                        @click="emit('edit-user', user)"
+                        class="px-1 py-1 text-gray-400 hover:text-green-600"
                     >
-                        {{ permission }}
-                    </span>
+                        <SquarePen class="inline w-4 h-4" />
+                    </button>
+                    <button
+                        @click="emit('delete-user', user.id)"
+                        class="px-1 py-1 text-gray-400 hover:text-red-600"
+                    >
+                        <Trash class="inline w-4 h-4" />
+                    </button>
                 </td>
             </tr>
         </tbody>

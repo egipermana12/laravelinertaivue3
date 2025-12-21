@@ -57,5 +57,5 @@ export function useSwal() {
     const error = (msg: string, title = "Gagal") =>
         fire({ title, text: msg }, "error");
 
-    return { fire, confirm, toast, error };
+    return { fire, confirm, toast, error, success };
 }
