@@ -10,7 +10,7 @@ const props = defineProps({
     useFormSidebar: Object,
 });
 
-const emit = defineEmits(["childSubmitNew"]);
+const emit = defineEmits(["childSubmitNew", "close-modal-new"]);
 const submitForm = () => {
     // Anda bisa mengeluarkan data form di sini jika diperlukan
     // emit('childSubmitNew', dataForm);
@@ -88,11 +88,18 @@ const closeIconPicker = () => {
                     :message="useFormSidebar.errors.icon"
                 />
             </div>
-            <div class="pt-4">
+            <div class="pt-4 flex justify-end items-center gap-2">
+                <button
+                    type="button"
+                    @click="$emit('close-modal-new')"
+                    class="px-4 py-2 border text-white bg-red-500 rounded-sm text-sm hover:bg-red-600 font-bold"
+                >
+                    Cancel
+                </button>
                 <Button
                     type="submit"
                     :disabled="useFormSidebar.processing"
-                    class="w-full"
+                    class=""
                 >
                     Save Changes
                 </Button>

@@ -22,4 +22,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
     }
+
+    protected $listen = [
+        \Illuminate\Auth\Events\Login::class => [
+            \App\Listeners\UpdateLastLogin::class,
+        ],
+    ];
 }

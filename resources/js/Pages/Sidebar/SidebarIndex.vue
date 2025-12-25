@@ -59,7 +59,9 @@ const useFormSidebar = useForm({
 const saveItemSidebar = () => {
     useFormSidebar.put(`/sidebar/${useFormSidebar.id}`, {
         preserveScroll: true,
-        onSuccess: () => closeModal(),
+        onSuccess: () => {
+            closeModal(), useFormSidebar.reset();
+        },
     });
 };
 
@@ -80,16 +82,20 @@ const onDragEnd = () => {
 const showModalNewMenu = ref(false);
 
 const openModalNewMenu = () => {
+    useFormSidebar.reset();
     showModalNewMenu.value = true;
 };
 const closeModalNewMenu = () => {
+    useFormSidebar.reset();
     showModalNewMenu.value = false;
 };
 
 const saveNewMenu = () => {
     useFormSidebar.post(`/sidebar/new`, {
         preserveScroll: true,
-        onSuccess: () => closeModalNewMenu(),
+        onSuccess: () => {
+            closeModalNewMenu(), useFormSidebar.reset();
+        },
     });
 };
 </script>
@@ -125,6 +131,7 @@ const saveNewMenu = () => {
             <ModalEditMenu
                 @childSubmit="saveItemSidebar"
                 :disableUrl="disableUrl"
+                @close-modal="closeModal"
                 :useFormSidebar="useFormSidebar"
             />
         </Modal>
@@ -137,6 +144,7 @@ const saveNewMenu = () => {
         >
             <ModalNewMenu
                 @childSubmitNew="saveNewMenu"
+                @close-modal-new="closeModalNewMenu"
                 :useFormSidebar="useFormSidebar"
             />
         </Modal>

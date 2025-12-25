@@ -46,6 +46,20 @@ class LoginRequest extends FormRequest
         $login_val = $this->input('login');
         $password_val = $this->input('password');
 
+        $user = \App\Models\User::where($login_type, $login_val)->first();
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'login' => trans('auth.failed'),
+            ]);
+        }
+
+        if ($user->is_active !== 1) {
+            throw ValidationException::withMessages([
+                'login' => 'Akun Anda nonaktif. Hubungi administrator.',
+            ]);
+        }
+
 
 
         if (! Auth::attempt([$login_type => $login_val, 'password' => $password_val], $this->boolean('remember'))) {
@@ -87,6 +101,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }

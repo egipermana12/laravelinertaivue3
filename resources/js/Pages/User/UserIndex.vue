@@ -3,8 +3,8 @@ import LayoutDashboard from "@/Layouts/LayoutDashboard.vue";
 import Input from "@/Components/ui/input/Input.vue";
 import Select from "@/Components/Select.vue";
 import Modal from "@/Components/Modal.vue";
-import { Head, router, useForm } from "@inertiajs/vue3";
-import { ref, computed } from "vue";
+import { Head, router, useForm, usePage } from "@inertiajs/vue3";
+import { ref, computed, watch } from "vue";
 import Pagination from "@/Components/Pagination.vue";
 import UserTable from "./UserTable.vue";
 import { useSwal } from "@/lib/useSwal";
@@ -31,6 +31,7 @@ function applyFilters() {
     router.get(route("users.index"), filtersAll.value, {
         preserveState: true,
         replace: true,
+        only: ["users", "filters"],
     });
 }
 
@@ -47,11 +48,11 @@ function resetFilters() {
 const selected = ref([]);
 
 // semua id pada halaman sekarang
-const pageUserIds = computed(() => props.users.data.map((user) => user.id));
-const allSelected = computed(
-    () =>
-        selected.value.length === pageUserIds.value.length &&
-        pageUserIds.value.length > 0
+const users = computed(() => usePage().props.users);
+const pageUserIds = computed(() => users.value.data.map((user) => user.id));
+
+const allSelected = computed(() =>
+    pageUserIds.value.every((id) => selected.value.includes(id))
 );
 
 //select all checkbox di klik
@@ -62,6 +63,14 @@ function toggleSelectAll() {
         selected.value = [...pageUserIds.value];
     }
 }
+
+//hapus select jika filter berubah
+watch(
+    () => users.value.data,
+    () => {
+        selected.value = [];
+    }
+);
 
 //selecr single row
 function toggleSelectSingle(id) {
@@ -110,13 +119,12 @@ const bulkDelete = async () => {
 };
 
 //form users
-const formUser = useForm({
+const editForm = useForm({
     id: null,
     name: "",
     username: "",
     email: "",
-    password: "",
-    role: "staff",
+    role: "",
     permissions: [],
 });
 
@@ -124,40 +132,50 @@ const formUser = useForm({
 const modalEditUser = ref(false);
 
 const openEditModal = (user) => {
-    formUser.reset();
-    formUser.id = user.id;
-    formUser.name = user.name;
-    formUser.username = user.username;
-    formUser.email = user.email;
-    formUser.role = user.roles[0];
-    formUser.permissions = user.permissions;
+    editForm.reset();
+    editForm.id = user.id;
+    editForm.name = user.name;
+    editForm.username = user.username;
+    editForm.email = user.email;
+    editForm.role = user.roles[0] ?? "";
+    editForm.permissions = user.permissions;
     modalEditUser.value = true;
 };
 
 const closeEditModal = () => {
-    formUser.reset();
+    editForm.reset();
+    editForm.clearErrors();
     modalEditUser.value = false;
 };
 
 //new users
+const createForm = useForm({
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+    role: "staff",
+    permissions: [],
+});
 const modalNewUser = ref(false);
 
 const openNewUserModal = () => {
-    formUser.reset();
+    createForm.reset();
     modalNewUser.value = true;
 };
 
 const closeNewUserModal = () => {
-    formUser.reset();
+    createForm.reset();
+    createForm.clearErrors();
     modalNewUser.value = false;
 };
 
 const saveEdituser = () => {
-    formUser.put(route("users.update", formUser.id), {
+    editForm.put(route("users.update", editForm.id), {
         preserveScroll: true,
         onSuccess: () => {
             modalEditUser.value = false;
-            formUser.reset();
+            editForm.reset();
             success("User berhasil diupdate.");
         },
     });
@@ -165,11 +183,11 @@ const saveEdituser = () => {
 
 //save new users
 const saveNewuser = () => {
-    formUser.post(route("users.store"), {
+    createForm.post(route("users.store"), {
         preserveScroll: true,
         onSuccess: () => {
             modalNewUser.value = false;
-            formUser.reset();
+            createForm.reset();
             success("User berhasil ditambahkan.");
         },
     });
@@ -177,12 +195,7 @@ const saveNewuser = () => {
 
 // delete user
 const confirmDelete = async (userId) => {
-    const selectSingleDelete = ref([]);
-    selectSingleDelete.value.push(userId);
-    if (selectSingleDelete.value.length === 0) {
-        return;
-    }
-    const confirmed = await confirm(`Hapus user ini?`, {
+    const confirmed = await confirm("Hapus user ini?", {
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: "Ya, hapus",
@@ -190,18 +203,15 @@ const confirmDelete = async (userId) => {
         confirmButtonColor: "#dc2626", // merah
         cancelButtonColor: "#6b7280", // abu-abu
     });
-    if (!confirmed) {
-        return; // user klik batal
-    }
+    if (!confirmed) return;
+
     router.post(
         route("users.bulk-delete"),
         {
-            user_ids: selectSingleDelete.value,
+            user_ids: [userId],
         },
         {
-            onSuccess: () => {
-                success("User berhasil dihapus.");
-            },
+            onSuccess: () => success("User berhasil dihapus."),
         }
     );
 };
@@ -266,7 +276,7 @@ const confirmDelete = async (userId) => {
                     <div class="overflow-hidden rounded-lg border mt-6">
                         <div class="relative w-full overflow-auto">
                             <UserTable
-                                :users="props.users"
+                                :users="users"
                                 v-model:selected="selected"
                                 :allSelected="allSelected"
                                 @toggle-select-all="toggleSelectAll"
@@ -278,7 +288,7 @@ const confirmDelete = async (userId) => {
                     </div>
                     <div class="mt-1 flex justify-between items-center">
                         <div></div>
-                        <Pagination :links="props.users.links" />
+                        <Pagination :links="users.links" />
                     </div>
                 </div>
             </div>
@@ -289,7 +299,7 @@ const confirmDelete = async (userId) => {
                 @childSubmitUser="saveEdituser"
                 :roles="props.roles"
                 :permissions="props.permissions"
-                v-model:useFormUser="formUser"
+                v-model:useFormUser="editForm"
                 @close-modal="closeEditModal"
             >
             </UserEditModal>
@@ -304,7 +314,7 @@ const confirmDelete = async (userId) => {
                 @childSubmitUser="saveNewuser"
                 :roles="props.roles"
                 :permissions="props.permissions"
-                v-model:useFormUser="formUser"
+                v-model:useFormUser="createForm"
                 @close-modal="closeNewUserModal"
             />
         </Modal>
